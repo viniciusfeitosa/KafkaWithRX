@@ -1,4 +1,5 @@
-from kafka import KafkaProducer
+from kafka import KafkaProducer, TopicPartition
+from kafka.partitioner import RoundRobinPartitioner
 from rx import Observer, Observable
 import json
 import functools
@@ -8,9 +9,14 @@ class Producer(Observer):
     def __init__(self, message_sender, compensatory_request=None):
         self.message_sender = message_sender
         self.compensatory_request = compensatory_request
+        partitioner = RoundRobinPartitioner(partitions=[
+            TopicPartition(topic=self.message_sender, partition=0),
+            TopicPartition(topic=self.message_sender, partition=1)
+        ])
         self.producer = KafkaProducer(
             bootstrap_servers=['localhost:29092'],
             value_serializer=lambda m: json.dumps(m).encode('ascii'),
+            partitioner=partitioner,
         )
 
     def on_next(self, value):
@@ -20,7 +26,7 @@ class Producer(Observer):
         )
 
     def on_completed(self):
-        self.producer.close()
+        self.producer.flush()
         print('Done!!!')
 
     def on_error(self, error):
@@ -47,4 +53,6 @@ def my_func(name):
 
 if __name__ == '__main__':
     print('Ctrl+c to stop')
-    my_func('Pacheco')
+    for i in range(1000):
+        my_func('Pacheco a{}'.format(i))
+        my_func('Pacheco b{}'.format(i))
