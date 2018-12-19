@@ -50,6 +50,5 @@ def my_func(name):
 if __name__ == '__main__':
     print('Ctrl+c to stop')
     for i in range(1000):
-        print(i)
-        print(my_func('Pacheco a{}'.format(i)))
-        print(my_func('Pacheco b{}'.format(i)))
+        my_func('Pacheco a{}'.format(i))
+        my_func('Pacheco b{}'.format(i))
