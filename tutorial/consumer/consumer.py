@@ -1,6 +1,5 @@
+from abc import ABCMeta
 from kafka import KafkaConsumer
-from kafka.coordinator.assignors.roundrobin import RoundRobinPartitionAssignor
-from kafka.structs import OffsetAndMetadata, TopicPartition
 from rx import (
     Observer,
     Observable,
@@ -8,16 +7,32 @@ from rx import (
 import json
 
 
-class Consumer(Observer):
+class RXConsumer(Observer):
+    __metaclass__ = ABCMeta
 
-    def __init__(self, consumer):
-        self.consumer = consumer
+    consumer_topic = None
+
+    def __init__(self):
+        group_id = 'rx-{}'.format(self.__class__.__name__)
+        print('group ID {}'.format(group_id))
+        print('topic {}'.format(self.consumer_topic))
+        self.consumer = KafkaConsumer(
+            self.consumer_topic,
+            bootstrap_servers=['localhost:29092'],
+            key_deserializer=lambda m: m.decode('ascii'),
+            value_deserializer=lambda m: json.loads(m.decode('ascii')),
+            group_id=group_id,
+        )
+        source = Observable.from_(self.consumer)
+        source.subscribe(self)
+
+
+class MyImplementation(RXConsumer):
+
+    consumer_topic = 'kafka-python-topic'
 
     def on_next(self, msg):
-        tp = TopicPartition(msg.topic, msg.partition)
-        offsets = {tp: OffsetAndMetadata(msg.offset, None)}
-        print('Received {}'.format(msg.value))
-        self.consumer.commit(offsets=offsets)
+        print('Received key {} and value {}'.format(msg.key, msg.value))
 
     def on_completed(self):
         print('Done!!!')
@@ -27,13 +42,4 @@ class Consumer(Observer):
 
 
 if __name__ == '__main__':
-    consumer = KafkaConsumer(
-        'kafka-python-topic',
-        bootstrap_servers=['localhost:29092'],
-        value_deserializer=lambda m: json.loads(m.decode('ascii')),
-        partition_assignment_strategy=[RoundRobinPartitionAssignor],
-        group_id='my_group'
-    )
-
-    source = Observable.from_(consumer)
-    source.subscribe(Consumer(consumer))
+    MyImplementation()
