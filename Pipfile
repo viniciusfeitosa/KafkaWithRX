@@ -10,6 +10,9 @@ kafka-python = "*"
 [dev-packages]
 pep8 = "*"
 flake8 = "*"
+pytest = "*"
+pytest-cov = "*"
+mock = "*"
 
 [requires]
 python_version = "3.7.1"
