@@ -1,9 +1,6 @@
 from abc import ABCMeta
 from kafka import KafkaConsumer
-from rx import (
-    Observer,
-    Observable,
-)
+from rx import Observer
 import json
 
 
@@ -12,12 +9,13 @@ class RXConsumer(Observer):
 
     consumer_topic = None
 
-    def __init__(self):
-        self.consumer = self.get_consumer()
-        source = Observable.from_(self.consumer)
-        source.subscribe(self)
+    def __init__(self, iterable=None):
+        self.__iterable = iterable
 
-    def get_consumer(self):
+    @property
+    def iterable(self):
+        if self.__iterable:
+            return self.__iterable
         return KafkaConsumer(
             self.consumer_topic,
             bootstrap_servers=['localhost:29092'],
@@ -30,16 +28,12 @@ class RXConsumer(Observer):
         return NotImplemented
 
     def on_next(self, msg):
-        try:
-            self.process_consumer(msg)
-        except Exception as e:
-            self.on_error(e)
+        pass
 
     def on_completed(self):
-        self.consumer.close()
+        print('completed')
 
     def on_error(self, error):
-        self.consumer.close()
         print('Error:', error)
 
 
@@ -48,9 +42,6 @@ class MyImplementation(RXConsumer):
     consumer_topic = 'kafka-python-topic'
 
     def process_consumer(self, msg):
-        raise KeyError('bla')
-        print('Received key {} and value {}'.format(msg.key, msg.value))
-
-
-if __name__ == '__main__':
-    MyImplementation()
+        import time
+        time.sleep(10)
+        print('Received {}'.format(msg))
