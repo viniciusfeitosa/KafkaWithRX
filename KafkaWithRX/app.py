@@ -11,7 +11,7 @@ def hello():
 
 
 if __name__ == "__main__":
-    rx_initializer(
+    rx_initializer([
         MyImplementation(
             iterable=[
                 {'key': 'name', 'value': 'Vinicius'},
@@ -19,5 +19,5 @@ if __name__ == "__main__":
                 {'key': 'name', 'value': 'Pacheco'},
             ]
         )
-    )
+    ])
     app.run()

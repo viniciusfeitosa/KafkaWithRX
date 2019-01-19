@@ -18,6 +18,6 @@ def worker(consumer, iterable):
         ).subscribe(consumer)
 
 
-def rx_initializer(consumer):
-    # gevent.spawn(worker(iterable, consumer)).join()
-    Process(target=worker, args=(consumer, consumer.iterable)).start()
+def rx_initializer(consumers):
+    for consumer in consumers:
+        Process(target=worker, args=(consumer, consumer.iterable)).start()
