@@ -42,6 +42,4 @@ class MyImplementation(RXConsumer):
     consumer_topic = 'kafka-python-topic'
 
     def process_consumer(self, msg):
-        import time
-        time.sleep(10)
         print('Received {}'.format(msg))
