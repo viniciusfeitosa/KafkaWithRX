@@ -1,5 +1,5 @@
 from consumer import MyImplementation
-from initializer import rx_initializer
+from initializer import RXInitializer
 from flask import Flask
 
 app = Flask(__name__)
@@ -11,7 +11,7 @@ def hello():
 
 
 if __name__ == "__main__":
-    rx_initializer([
+    initializer = RXInitializer([
         MyImplementation(
             iterable=[
                 {'key': 'name', 'value': 'Vinicius'},
@@ -20,4 +20,5 @@ if __name__ == "__main__":
             ]
         )
     ])
+    initializer.run()
     app.run()

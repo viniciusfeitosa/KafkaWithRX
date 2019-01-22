@@ -18,6 +18,25 @@ def worker(consumer, iterable):
         ).subscribe(consumer)
 
 
-def rx_initializer(consumers):
-    for consumer in consumers:
-        Process(target=worker, args=(consumer, consumer.iterable)).start()
+class RXInitializer:
+
+    def __init__(self, consumers):
+        self.__processes = self.__get_processes(consumers)
+
+    def __get_processes(self, consumers):
+        return [
+            Process(target=worker, args=(consumer, consumer.iterable))
+            for consumer in consumers
+        ]
+
+    def run(self):
+        [
+            process.start()
+            for process in self.__processes
+        ]
+
+    def release(self):
+        return [
+            process.join()
+            for process in self.__processes
+        ]
