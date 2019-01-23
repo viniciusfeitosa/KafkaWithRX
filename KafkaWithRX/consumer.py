@@ -1,13 +1,15 @@
+import json
+
 from abc import ABCMeta
 from kafka import KafkaConsumer
 from rx import Observer
-import json
 
 
 class RXConsumer(Observer):
     __metaclass__ = ABCMeta
 
     consumer_topic = None
+    consumer_group = None
 
     def __init__(self, iterable=None):
         self.__iterable = iterable
@@ -21,7 +23,7 @@ class RXConsumer(Observer):
             bootstrap_servers=['localhost:29092'],
             key_deserializer=lambda m: m.decode('ascii'),
             value_deserializer=lambda m: json.loads(m.decode('ascii')),
-            group_id='rx-{}'.format(self.__class__.__name__),
+            group_id=self.consumer_group,
         )
 
     def process_consumer(self, msg):
@@ -37,11 +39,12 @@ class RXConsumer(Observer):
         print('Error:', error)
 
 
-class MyImplementation(RXConsumer):
+class MyImplementation1(RXConsumer):
 
     consumer_topic = 'kafka-python-topic'
+    consumer_group = 'foo'
 
     def process_consumer(self, msg):
         import time
-        time.sleep(10)
-        print('Received {}'.format(msg))
+        time.sleep(msg.value['name'])
+        print('Received: {}'.format(msg.value['name']))
